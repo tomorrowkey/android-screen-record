@@ -1,0 +1,73 @@
+#!/bin/bash
+
+function ensure_command_installation() {
+  which $1 > /dev/null 2>&1
+  if [ $? -eq 1 ]; then
+    echo "$1 command is not found" >&2
+    exit 1
+  fi
+}
+
+function ensure_device_connected() {
+  adb devices | grep -e "device$" > /dev/null
+}
+
+function progress() {
+  local START_TIME=$(date +%s)
+
+  while true; do
+    printf "\rRecording... %s" `date -u -r $(($(date +%s) - START_TIME)) +%H:%M:%S`
+    sleep 1
+  done
+}
+
+function screenrecord() {
+  local devices=$(adb devices | grep -e "device$")
+  if [ $(echo -e "$devices" | wc -l) -eq 1 ]; then
+    local device=$(echo -e "$devices" | awk '{ print $1 }')
+  else
+    local device=$(echo -e "$devices" | peco | awk '{ print $1 }')
+  fi
+
+  local DEVICE_MOVIE_DIR=$(adb -s $device shell 'echo $TMPDIR')
+  local CURRENT_TIMESTAMP=`date "+%Y%m%d%H%M%S"`
+  local MOVIE_DIR="${HOME}/Desktop/android-screen-record/${CURRENT_TIMESTAMP}"
+  local NUMBER_OF_CORES=`sysctl -n hw.ncpu`
+
+  progress &
+
+  trap : SIGINT
+  adb -s $device shell "screenrecord $DEVICE_MOVIE_DIR/movie.mp4"
+  trap SIGINT
+
+  kill $! && wait $! 2>/dev/null
+
+  echo -e "\nRecording finished."
+
+  while true; do
+    adb -s $device shell "ps -A -o name | grep -e '^screenrecord$'" > /dev/null
+    if [ $? -eq 1 ]; then
+      break
+    fi
+
+    echo 'Wait for screenrecord process termination...'
+    sleep 1
+  done
+
+  echo 'Convert the movie into gif animation files.'
+
+  mkdir -p "$MOVIE_DIR"
+  adb -s $device pull "${DEVICE_MOVIE_DIR}/movie.mp4" "${MOVIE_DIR}/original.mp4" > /dev/null
+
+  seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1 -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ.gif"
+
+  echo "The movie files are located at ${MOVIE_DIR}"
+  open "$MOVIE_DIR"
+}
+
+for name in adb ffmpeg peco; do
+  ensure_command_installation $name
+done
+
+ensure_device_connected
+screenrecord
