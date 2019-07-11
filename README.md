@@ -4,6 +4,18 @@ android-screen-record
 - A command to take screen record for Android
 - The movie file convert into gif animation automatically.
 
+# Sample
+
+## Original mp4 file
+
+[Original mp4 file](./sample/original.mp4)
+
+## GIF
+
+FPS 10/20/30
+
+<img src="./sample/fps_10.gif" width="200" alt="fps10"> <img src="./sample/fps_20.gif" width="200" alt="fps20"> <img src="./sample/fps_30.gif" width="200" alt="fps30">
+
 # Usage
 
 Execute following command to begin screen recording
