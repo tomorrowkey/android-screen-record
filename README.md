@@ -28,7 +28,7 @@ This command is available for only macOS. and also needs following commands.
 
 ```
 $ brew tap tomorrowkey/self
-$ brew install android-screen-record
+$ brew install tomorrowkey/self/android-screen-record
 ```
 
 # License
