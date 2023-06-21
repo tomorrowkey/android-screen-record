@@ -2,7 +2,7 @@ android-screen-record
 ===
 
 - A command to take screen record for Android
-- The movie file convert into gif animation automatically.
+- The movie file convert into (gif|low fps mp4) files automatically.
 
 # Sample
 

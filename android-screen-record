@@ -61,6 +61,10 @@ function screenrecord() {
 
   seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1 -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ.gif"
 
+  echo 'Convert the movie into low fps movie files.'
+
+  seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ.mp4"
+
   echo "The movie files are located at ${MOVIE_DIR}"
   open "$MOVIE_DIR"
 }
