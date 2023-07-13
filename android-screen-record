@@ -15,9 +15,13 @@ function ensure_device_connected() {
 function progress() {
   local START_TIME=$(date +%s)
 
+  local SPINNER=( "⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏" )
+  local _SPINNER_IDX=0
+
   while true; do
-    printf "\rRecording... %s" `date -u -r $(($(date +%s) - START_TIME)) +%H:%M:%S`
-    sleep 1
+    printf "\r${SPINNER[_SPINNER_IDX]} Recording %s" `date -u -r $(($(date +%s) - START_TIME)) +%H:%M:%S`
+    ((_SPINNER_IDX=(_SPINNER_IDX+1)%${#SPINNER[@]}))
+    sleep 0.01
   done
 }
 
