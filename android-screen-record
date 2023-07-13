@@ -34,6 +34,22 @@ function screenrecord() {
   local MOVIE_DIR="${HOME}/Desktop/android-screen-record/${CURRENT_TIMESTAMP}"
   local NUMBER_OF_CORES=`sysctl -n hw.ncpu`
 
+  while getopts "f:" opt; do
+    case $opt in
+      f)
+        case "$OPTARG" in
+          gif|mp4)
+            FORMAT="$OPTARG"
+            ;;
+          *)
+            echo "Invalid value for -f. Expected 'gif' or 'mp4', but got: $OPTARG" >&2
+            exit 1
+            ;;
+        esac
+        ;;
+    esac
+  done
+
   progress &
 
   trap : SIGINT
@@ -54,16 +70,18 @@ function screenrecord() {
     sleep 1
   done
 
-  echo 'Convert the movie into gif animation files.'
-
   mkdir -p "$MOVIE_DIR"
   adb -s $device pull "${DEVICE_MOVIE_DIR}/movie.mp4" "${MOVIE_DIR}/original.mp4" > /dev/null
 
-  seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1 -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ.gif"
+  if [ "$FORMAT" = "" ] || [ "$FORMAT" = "gif" ]; then
+    echo 'Convert the movie into gif animation files.'
+    seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1 -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ.gif"
+  fi
 
-  echo 'Convert the movie into low fps movie files.'
-
-  seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ.mp4"
+  if [ "$FORMAT" = "" ] || [ "$FORMAT" = "mp4" ]; then
+    echo 'Convert the movie into low fps movie files.'
+    seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ.mp4"
+  fi
 
   echo "The movie files are located at ${MOVIE_DIR}"
   open "$MOVIE_DIR"
@@ -74,4 +92,4 @@ for name in adb ffmpeg peco; do
 done
 
 ensure_device_connected
-screenrecord
+screenrecord $@
