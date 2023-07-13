@@ -27,6 +27,14 @@ $ android-screen-record
 Interrupt(Ctrl + C) when you want to finish recording.
 The mp4 file and gif files are copied to `$HOME/Desktop/android-screen-record` directory.
 
+You can specify output format using `-f` option
+
+```
+$ android-screen-record -f mp4
+```
+
+low fpg mp4 file will be saved to the output directory.
+
 # Requirements
 
 This command is available for only macOS. and also needs following commands.
