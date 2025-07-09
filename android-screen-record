@@ -35,7 +35,7 @@ function screenrecord() {
 
   local DEVICE_MOVIE_DIR=$(adb -s $device shell 'echo $TMPDIR')
   local CURRENT_TIMESTAMP=`date "+%Y%m%d%H%M%S"`
-  local MOVIE_DIR="${HOME}/Desktop/android-screen-record/${CURRENT_TIMESTAMP}"
+  local MOVIE_DIR="${TMPDIR:-/tmp}/android-screen-record/${CURRENT_TIMESTAMP}"
   local NUMBER_OF_CORES=`sysctl -n hw.ncpu`
 
   while getopts "f:" opt; do
