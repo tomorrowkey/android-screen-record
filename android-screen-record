@@ -38,7 +38,7 @@ function screenrecord() {
   local MOVIE_DIR="${TMPDIR:-/tmp}/android-screen-record/${CURRENT_TIMESTAMP}"
   local NUMBER_OF_CORES=`sysctl -n hw.ncpu`
 
-  while getopts "f:" opt; do
+  while getopts "f:s:" opt; do
     case $opt in
       f)
         case "$OPTARG" in
@@ -47,6 +47,17 @@ function screenrecord() {
             ;;
           *)
             echo "Invalid value for -f. Expected 'gif' or 'mp4', but got: $OPTARG" >&2
+            exit 1
+            ;;
+        esac
+        ;;
+      s)
+        case "$OPTARG" in
+          1|2|3)
+            SPEED="$OPTARG"
+            ;;
+          *)
+            echo "Invalid value for -s. Expected '1', '2', or '3', but got: $OPTARG" >&2
             exit 1
             ;;
         esac
@@ -80,18 +91,25 @@ function screenrecord() {
   if [ "$FORMAT" = "" ] || [ "$FORMAT" = "gif" ]; then
     echo 'Convert the movie into gif animation files.'
 
-    # Generate GIF files at all speeds in parallel
-    {
-      seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1 -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ_1x.gif"
-    } &
+    if [ "$SPEED" = "" ]; then
+      # Default: generate 2x and 3x speed GIFs
+      {
+        seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1,setpts=0.5*PTS -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ_2x.gif"
+      } &
 
-    {
-      seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1,setpts=0.5*PTS -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ_2x.gif"
-    } &
-
-    {
-      seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1,setpts=0.33*PTS -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ_3x.gif"
-    } &
+      {
+        seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1,setpts=0.33*PTS -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ_3x.gif"
+      } &
+    else
+      # Generate GIF for specified speed only
+      if [ "$SPEED" = "1" ]; then
+        seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1 -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ_1x.gif"
+      elif [ "$SPEED" = "2" ]; then
+        seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1,setpts=0.5*PTS -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ_2x.gif"
+      elif [ "$SPEED" = "3" ]; then
+        seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1,setpts=0.33*PTS -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ_3x.gif"
+      fi
+    fi
 
     # Wait for all GIF conversions to complete
     wait
@@ -100,18 +118,25 @@ function screenrecord() {
   if [ "$FORMAT" = "" ] || [ "$FORMAT" = "mp4" ]; then
     echo 'Convert the movie into low fps movie files.'
 
-    # Generate MP4 files at all speeds in parallel
-    {
-      seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ_1x.mp4"
-    } &
+    if [ "$SPEED" = "" ]; then
+      # Default: generate 2x and 3x speed MP4s
+      {
+        seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf setpts=0.5*PTS -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ_2x.mp4"
+      } &
 
-    {
-      seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf setpts=0.5*PTS -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ_2x.mp4"
-    } &
-
-    {
-      seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf setpts=0.33*PTS -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ_3x.mp4"
-    } &
+      {
+        seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf setpts=0.33*PTS -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ_3x.mp4"
+      } &
+    else
+      # Generate MP4 for specified speed only
+      if [ "$SPEED" = "1" ]; then
+        seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ_1x.mp4"
+      elif [ "$SPEED" = "2" ]; then
+        seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf setpts=0.5*PTS -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ_2x.mp4"
+      elif [ "$SPEED" = "3" ]; then
+        seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf setpts=0.33*PTS -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ_3x.mp4"
+      fi
+    fi
 
     # Wait for all MP4 conversions to complete
     wait
