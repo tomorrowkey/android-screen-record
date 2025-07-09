@@ -35,6 +35,8 @@ $ android-screen-record -f mp4
 
 low fpg mp4 file will be saved to the output directory.
 
+The tool automatically generates files at multiple playback speeds (normal, 2x, 3x) for both GIF and MP4 formats.
+
 # Requirements
 
 This command is available for only macOS. and also needs following commands.

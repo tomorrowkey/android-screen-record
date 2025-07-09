@@ -79,12 +79,42 @@ function screenrecord() {
 
   if [ "$FORMAT" = "" ] || [ "$FORMAT" = "gif" ]; then
     echo 'Convert the movie into gif animation files.'
-    seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1 -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ.gif"
+
+    # Generate GIF files at all speeds in parallel
+    {
+      seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1 -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ_1x.gif"
+    } &
+
+    {
+      seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1,setpts=0.5*PTS -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ_2x.gif"
+    } &
+
+    {
+      seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1,setpts=0.33*PTS -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ_3x.gif"
+    } &
+
+    # Wait for all GIF conversions to complete
+    wait
   fi
 
   if [ "$FORMAT" = "" ] || [ "$FORMAT" = "mp4" ]; then
     echo 'Convert the movie into low fps movie files.'
-    seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ.mp4"
+
+    # Generate MP4 files at all speeds in parallel
+    {
+      seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ_1x.mp4"
+    } &
+
+    {
+      seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf setpts=0.5*PTS -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ_2x.mp4"
+    } &
+
+    {
+      seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf setpts=0.33*PTS -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ_3x.mp4"
+    } &
+
+    # Wait for all MP4 conversions to complete
+    wait
   fi
 
   echo "The movie files are located at ${MOVIE_DIR}"
