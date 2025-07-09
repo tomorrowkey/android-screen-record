@@ -2,7 +2,7 @@ android-screen-record
 ===
 
 - A command to take screen record for Android
-- The movie file convert into (gif|low fps mp4) files automatically.
+- The movie file converts into GIF and MP4 files automatically at multiple playback speeds (1x, 2x, 3x)
 
 # Sample
 
@@ -25,17 +25,35 @@ $ android-screen-record
 ```
 
 Interrupt(Ctrl + C) when you want to finish recording.
-The mp4 file and gif files are copied to `$HOME/Desktop/android-screen-record` directory.
+The files are saved to a temporary directory (`$TMPDIR/android-screen-record/`) and automatically opened in Finder.
 
 You can specify output format using `-f` option
 
 ```
-$ android-screen-record -f mp4
+$ android-screen-record -f mp4   # Generate MP4 files only
+$ android-screen-record -f gif   # Generate GIF files only
+$ android-screen-record          # Generate both GIF and MP4 files (default)
 ```
 
-low fpg mp4 file will be saved to the output directory.
+## Generated Files
 
-The tool automatically generates files at multiple playback speeds (normal, 2x, 3x) for both GIF and MP4 formats.
+The tool automatically generates files at multiple playback speeds for both GIF and MP4 formats:
+
+### GIF Files (10, 20, 30 fps)
+- `fps_10_1x.gif` - Normal speed (1x)
+- `fps_10_2x.gif` - Double speed (2x)
+- `fps_10_3x.gif` - Triple speed (3x)
+- `fps_20_1x.gif`, `fps_20_2x.gif`, `fps_20_3x.gif`
+- `fps_30_1x.gif`, `fps_30_2x.gif`, `fps_30_3x.gif`
+
+### MP4 Files (30, 60 fps)
+- `fps_30_1x.mp4` - Normal speed (1x)
+- `fps_30_2x.mp4` - Double speed (2x)
+- `fps_30_3x.mp4` - Triple speed (3x)
+- `fps_60_1x.mp4`, `fps_60_2x.mp4`, `fps_60_3x.mp4`
+
+### Original File
+- `original.mp4` - The original recorded video from Android device
 
 # Requirements
 
