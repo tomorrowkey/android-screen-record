@@ -92,7 +92,11 @@ function screenrecord() {
     echo 'Convert the movie into gif animation files.'
 
     if [ "$SPEED" = "" ]; then
-      # Default: generate 2x and 3x speed GIFs
+      # Default: generate 1x, 2x and 3x speed GIFs
+      {
+        seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1 -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ_1x.gif"
+      } &
+
       {
         seq 10 10 30 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf scale=640:-1,setpts=0.5*PTS -f gif -r ZZ "${MOVIE_DIR}/fps_ZZ_2x.gif"
       } &
@@ -119,7 +123,11 @@ function screenrecord() {
     echo 'Convert the movie into low fps movie files.'
 
     if [ "$SPEED" = "" ]; then
-      # Default: generate 2x and 3x speed MP4s
+      # Default: generate 1x, 2x and 3x speed MP4s
+      {
+        seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ_1x.mp4"
+      } &
+
       {
         seq 30 30 60 | xargs -I ZZ -P $NUMBER_OF_CORES ffmpeg -loglevel panic -y -i "${MOVIE_DIR}/original.mp4" -vf setpts=0.5*PTS -f mp4 -r ZZ "${MOVIE_DIR}/fps_ZZ_2x.mp4"
       } &
